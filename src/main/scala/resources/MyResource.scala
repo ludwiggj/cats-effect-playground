@@ -1,23 +1,23 @@
 package resources
 
-trait Resource[R] { self =>
+trait MyResource[R] { self =>
   def use[U](f: R => U): U
 
-  def flatMap[B](mapping: R => Resource[B]): Resource[B] = {
-    new Resource[B] {
+  def flatMap[B](mapping: R => MyResource[B]): MyResource[B] = {
+    new MyResource[B] {
       override def use[U](f: B => U): U = self.use(mapping(_).use(f))
     }
   }
 
-  def map[B](mapping: R => B): Resource[B] = {
-    new Resource[B] {
+  def map[B](mapping: R => B): MyResource[B] = {
+    new MyResource[B] {
       override def use[U](f: B => U): U = self.use(r => f(mapping(r)))
     }
   }
 }
 
-object Resource {
-  def make[R] (acquire: => R)(close: R => Unit): Resource[R] = new Resource[R] {
+object MyResource {
+  def make[R] (acquire: => R)(close: R => Unit): MyResource[R] = new MyResource[R] {
     override def use[U](f: R => U): U = {
       val resource = acquire
       try {
@@ -28,5 +28,5 @@ object Resource {
     }
   }
 
-  def pure[R](r: => R): Resource[R] = make(r)(_ => ())
+  def pure[R](r: => R): MyResource[R] = make(r)(_ => ())
 }

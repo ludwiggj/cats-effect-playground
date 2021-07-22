@@ -4,57 +4,14 @@ import resources.DB.withDB
 import resources.HttpServer.withHttpServer
 import resources.SqsConsumer.withSqsConsumer
 
-trait SqsConsumer {
-  def poll(): Unit = println("SqsConsumer polling")
-
-  def close(): Unit = println("SqsConsumer closed")
-}
-
-object SqsConsumer {
-  def withSqsConsumer[T](resource: SqsConsumer)(handle: SqsConsumer => T): T = {
-    try {
-      handle(resource)
-    } finally {
-      resource.close()
-    }
-  }
-}
-
-trait DB {
-  def close(): Unit = println("Closing DB")
-}
-
-object DB {
-  def withDB[T](resource: DB)(handle: DB => T): T = {
-    try {
-      handle(resource)
-    } finally {
-      resource.close()
-    }
-  }
-}
-
-trait HttpServer {
-  def close(): Unit = println("Closing Http server")
-}
-
-object HttpServer {
-  def withHttpServer[T](resource: HttpServer)(handle: HttpServer => T): T = {
-    try {
-      handle(resource)
-    } finally {
-      resource.close()
-    }
-  }
-}
-
-object ResourcesWorkout {
-  private val sqsConsumer = new SqsConsumer {}
-  private val dbResource: Resource[DB] = Resource.make(new DB { println("Opening DB") })(_.close())
-  private val httpServerResource: Resource[HttpServer] = Resource.make(new HttpServer { println("Opening Http Server") })(_.close())
+//noinspection ScalaUnusedSymbol
+object ResourceWorkout {
+  private val dbResource: MyResource[DB] = MyResource.make(DB())(_.close())
+  private val httpServerResource: MyResource[HttpServer] = MyResource.make(HttpServer())(_.close())
 
   def firstSqsLifecycle(): Unit = {
     println("firstSqsLifecycle...")
+    val sqsConsumer = SqsConsumer()
     try {
       // using sqsConsumer
       sqsConsumer.poll()
@@ -65,13 +22,13 @@ object ResourcesWorkout {
 
   def secondSqsLifecycle(): Unit = {
     println("secondSqsLifecycle...")
-    withSqsConsumer(new SqsConsumer {})(_.poll())
+    withSqsConsumer(SqsConsumer())(_.poll())
   }
 
   def dbAndServer(): Unit = {
     println("dbAndServer...")
-    withDB(new DB { println("Opening DB") }) { db =>
-      withHttpServer(new HttpServer { println("Opening Http Server") }) { server =>
+    withDB(DB()) { db =>
+      withHttpServer(HttpServer()) { server =>
         println("Using DB and HttpServer")
       }
     }
@@ -90,7 +47,7 @@ object ResourcesWorkout {
     println("dbAndServerTake3...")
     val r = dbResource.flatMap { db =>
       httpServerResource.flatMap { httpServer =>
-        Resource.pure(())
+        MyResource.pure(())
       }
     }
 
@@ -100,7 +57,7 @@ object ResourcesWorkout {
   def dbAndServerForComp(): Unit = {
     println("dbAndServerForComp...")
 
-    val resources: Resource[(HttpServer, DB)] = for {
+    val resources: MyResource[(HttpServer, DB)] = for {
       db <- dbResource
       httpServer <- httpServerResource
     } yield (httpServer, db)
