@@ -2,7 +2,7 @@ package resources
 
 import cats.effect.{ExitCode, IO, Resource}
 import cats.implicits.catsSyntaxTuple2Semigroupal
-import resources.CatsUtils.{contextShift, runIt, timer}
+import resources.CatsUtils.runIt
 
 import scala.concurrent.duration.DurationInt
 

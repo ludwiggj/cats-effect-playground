@@ -1,7 +1,7 @@
 package resources
 
 import cats.effect.{ExitCode, IO}
-import resources.CatsUtils.{contextShift, runIt, timer}
+import resources.CatsUtils.runIt
 
 import scala.concurrent.duration.DurationInt
 

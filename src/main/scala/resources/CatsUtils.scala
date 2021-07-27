@@ -1,13 +1,10 @@
 package resources
 
-import cats.effect.{ContextShift, IO, Timer}
-
-import scala.concurrent.ExecutionContext
+import cats.effect.unsafe.IORuntime
+import cats.effect.IO
 
 object CatsUtils {
-  val ec = ExecutionContext.global
-  implicit val timer: Timer[IO] = IO.timer(ec)
-  implicit val contextShift: ContextShift[IO] = IO.contextShift(ec)
+  private implicit val ioRuntime: IORuntime = cats.effect.unsafe.implicits.global
 
   def runIt[T](p: IO[T]): Option[T] = {
     try {
