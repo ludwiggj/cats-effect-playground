@@ -1,4 +1,4 @@
-package tutorial
+package tutorial.part3
 
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 
@@ -11,7 +11,7 @@ object FileCopy extends IOApp {
       IO.blocking(new FileInputStream(f)) // build
     } { inStream =>
       IO.println("Releasing input stream") >>
-      IO.blocking(inStream.close()).handleErrorWith(_ => IO.unit) // release
+        IO.blocking(inStream.close()).handleErrorWith(_ => IO.unit) // release
     }
 
   private def outputStream(f: File): Resource[IO, FileOutputStream] =
@@ -19,7 +19,7 @@ object FileCopy extends IOApp {
       IO.blocking(new FileOutputStream(f)) // build
     } { outStream =>
       IO.println("Releasing output stream") >>
-      IO.blocking(outStream.close()).handleErrorWith(_ => IO.unit) // release
+        IO.blocking(outStream.close()).handleErrorWith(_ => IO.unit) // release
     }
 
   private def inputOutputStreams(in: File, out: File): Resource[IO, (InputStream, OutputStream)] =
@@ -30,7 +30,7 @@ object FileCopy extends IOApp {
 
   private def transmit(origin: InputStream, destination: OutputStream, buffer: Array[Byte], acc: Long): IO[Long] =
     for {
-      amount <- IO.blocking(origin.read(buffer, 0, buffer.size))
+      amount <- IO.blocking(origin.read(buffer, 0, buffer.length))
       count <-
         if (amount > -1)
         // TODO - Hmm, can't seem to interrupt the code with the sleep placed here...
@@ -65,7 +65,7 @@ object FileCopy extends IOApp {
     for {
       _ <- if (args.length < 2) IO.raiseError(new IllegalArgumentException("Need origin and destination files"))
       else IO.unit
-      orig = new File(args(0))
+      orig = new File(args.head)
       dest = new File(args(1))
       count <- FileCopy.copy(orig, dest)
       _ <- IO.println(s"$count bytes copied from ${orig.getPath} to ${dest.getPath}")

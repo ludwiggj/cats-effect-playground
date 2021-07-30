@@ -1,6 +1,7 @@
-package tutorial
+package tutorial.part2
 
 import cats.effect.{IO, IOApp}
+
 import java.util.concurrent.{Executors, TimeUnit}
 
 object AsyncExample extends IOApp.Simple {
@@ -29,7 +30,7 @@ object AsyncExample extends IOApp.Simple {
   // In this case the exception thrown by program 3 will mean that the scheduler is not shutdown
   override def run: IO[Unit] =
     program1 *>
-    program2 *>
-    program3 *>
-    IO(scheduler.shutdown())
+      program2 *>
+      program3 *>
+      IO(scheduler.shutdown())
 }

@@ -1,8 +1,8 @@
-package tutorial
+package tutorial.part3
 
-import cats.effect.{ExitCode, IO, IOApp, Resource, Sync}
-import cats.syntax.all._
-
+import cats.effect._
+import cats.implicits._
+import cats.effect.std.Console
 import java.io._
 
 object FileCopyPolymorphic extends IOApp {
@@ -54,10 +54,10 @@ object FileCopyPolymorphic extends IOApp {
     }.attempt
   }
 
-  private def confirmFileOverwrite(filename: String): IO[Boolean] =
+  private def confirmFileOverwrite[F[_]: Sync: Console](filename: String): F[Boolean] =
     for {
-      _ <- IO.println(s"This operation will overwrite file $filename. Is this OK (y/yes)?")
-      resp <- IO.readLine
+      _ <- Console[F].println(s"This operation will overwrite file $filename. Is this OK (y/yes)?")
+      resp <- Console[F].readLine
     } yield {
       resp.toLowerCase() match {
         case "y" | "yes" => true
@@ -72,7 +72,7 @@ object FileCopyPolymorphic extends IOApp {
           IO.raiseError(new IllegalArgumentException("Need origin and destination files"))
         else
           IO.unit
-      srcFilename = args(0)
+      srcFilename = args.head
       destFilename = args(1)
       _ <-
         if (srcFilename == destFilename)
@@ -83,7 +83,7 @@ object FileCopyPolymorphic extends IOApp {
       dest = new File(destFilename)
       proceed <-
         if (dest.exists())
-          confirmFileOverwrite(destFilename)
+          confirmFileOverwrite[IO](destFilename)
         else
           IO.pure(true)
       _ <-

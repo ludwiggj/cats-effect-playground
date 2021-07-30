@@ -1,4 +1,4 @@
-package tutorial
+package tutorial.part2
 
 import cats.effect.{IO, IOApp, Resource}
 

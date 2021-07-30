@@ -1,7 +1,8 @@
-package tutorial
+package tutorial.part1
 
 import cats.effect.{IO, IOApp}
-import scala.concurrent.duration._
+
+import scala.concurrent.duration.DurationInt
 
 object HelloWorld extends IOApp.Simple {
   def hello1: IO[Unit] = IO.println("Hello, World!")
